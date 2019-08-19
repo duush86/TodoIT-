@@ -7,19 +7,26 @@
 //
 
 import UIKit
+import CoreData
 
 class ToDoListViewController: UITableViewController {
 
     // setting up itemArray, that will be used to host the items retrieved from Items.plist and the new items.
-    var itemArray = [item]()
-    // setting up dataFilePath that will be a reference to the app .plist
-    let dataFilePath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first?.appendingPathComponent("Items.plist")
+    var itemArray = [Item]()
+    var selectedCategorie: Category? {
+        didSet{
+            loadItems()
+        }
+    }
+    // setting up context
+    var context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
+    
+    
     
     //let defaults = UserDefaults.standard
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        loadItems()
     }
     
     //MARK - Tableview Datasource Methods
@@ -38,6 +45,7 @@ class ToDoListViewController: UITableViewController {
         // assigns the item.title text to the cell element's text
         cell.textLabel?.text = item.title
         // prints the checkmark if needed depending on the object .done element
+        
         cell.accessoryType = item.done ? .checkmark : .none
         
         return cell
@@ -48,8 +56,10 @@ class ToDoListViewController: UITableViewController {
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         //if the .done element is true, set the element to false. If the .done element is false, set the element to true
         itemArray[indexPath.row].done = !itemArray[indexPath.row].done
+//        context.delete(itemArray[indexPath.row])
+//        itemArray.remove(at: indexPath.row)
         //call method to save data into the .plist file, here you'll be saving if the user made a change on the .done element
-        saveData()
+        saveItem()
         // animate the table
         tableView.deselectRow(at: indexPath, animated: true)
         
@@ -65,16 +75,19 @@ class ToDoListViewController: UITableViewController {
         // action handles the event when the user taps on add element inside the alert alement.
         let action = UIAlertAction(title: "Add Item", style: .default) { (action) in
             //what will happen once the user clicks the add item alert in our alert
-            //creates a new instance of the item class
-            let newItem = item()
+            //creates a new instance of the item clasdsadsa
+            //self.context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
+            let newItem = Item(context: self.context)
             //assigns .title the value hosted on textField.text
             newItem.title = textField.text!
+            newItem.done = false
+            newItem.parentCategory = self.selectedCategorie
             //appends the new item element on the itemArray array
             self.itemArray.append(newItem)
             
             
             // calls saveData function
-            self.saveData()
+            self.saveItem()
             
            }
        // prints alert on screen
@@ -88,27 +101,53 @@ class ToDoListViewController: UITableViewController {
     }
     
     //MARK - saveData function - Encodes the itemArray array and writes the content into the dataFilePath reference. Then reloads the table data.
-    func saveData() {
-        let encoder = PropertyListEncoder()
+    func saveItem() {
         do {
-            let data = try encoder.encode(itemArray)
-            try data.write(to: dataFilePath!)
+            try context.save()
         } catch {
-            print("some happened")
+            print("\(error) something happened saving items")
         }
         tableView.reloadData()
     }
     
     //MARK - loadItems - Decodes the file on dataFilePath and assigns it to itemArray for the app to handle it
-    func loadItems(){
-      if let data = try? Data(contentsOf: dataFilePath!) {
-            let decoder = PropertyListDecoder()
-            do {
-                    itemArray = try decoder.decode([item].self, from: data)
-            } catch {
-                print("Error decoding item array \(error)")
+    func loadItems(with request: NSFetchRequest<Item> = Item.fetchRequest(),predicate: NSPredicate? = nil){
+        
+        let categoryPredicate = NSPredicate(format: "parentCategory.name MATCHES %@", selectedCategorie!.name!)
+        
+        if let additionalPredicate = predicate {
+            request.predicate = NSCompoundPredicate(andPredicateWithSubpredicates: [categoryPredicate,additionalPredicate])
+        } else {
+            request.predicate = categoryPredicate
+        }
+        
+        do {
+           itemArray = try context.fetch(request)
+        } catch {
+           print("Error fetching data from context \(error)")
+        }
+        tableView.reloadData()
+    }
+    
+ 
+   
+}
+
+//MARK: - Search bar methods
+extension ToDoListViewController: UISearchBarDelegate {
+    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
+        let request : NSFetchRequest<Item> = Item.fetchRequest()
+        let predicate = NSPredicate(format: "title CONTAINS %@", searchBar.text!)
+        request.sortDescriptors = [NSSortDescriptor(key: "title", ascending: true)]
+        loadItems(with: request, predicate: predicate)
+    }
+    
+    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
+        if searchBar.text?.count == 0 {
+            loadItems()
+            DispatchQueue.main.async {
+                searchBar.resignFirstResponder()
             }
         }
     }
 }
-
