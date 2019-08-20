@@ -7,18 +7,18 @@
 //
 
 import UIKit
-import CoreData
+import RealmSwift
 
 
 class CategoryTableViewController: UITableViewController {
-
-    var categoryArray = [Category]()
-    var context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
+ 
+    let realm = try! Realm()
+    var categories: Results<Category>?
 
     
     override func viewDidLoad() {
-        super.viewDidLoad()
-        loadCategories()
+       super.viewDidLoad()
+       loadCategories()
     }
     //MARK - TableView add new categories
 
@@ -31,13 +31,13 @@ class CategoryTableViewController: UITableViewController {
         let action = UIAlertAction(title: "Add", style: .default) { (action) in
             //what will happen once the user clicks the add item alert in our alert
             //creates a new instance of the item clasdsadsa
-            let newCategory = Category(context: self.context)
+            let newCategory = Category()
             //assigns .name the value hosted on textField.text
             newCategory.name = textField.text!
             //appends the new category element on the itemArray array
-            self.categoryArray.append(newCategory)
+            //self.categoryArray.append(newCategory)
             // calls saveData function
-            self.saveCategory()
+            self.saveCategory(category: newCategory)
             
         }
         // prints alert on screen
@@ -53,7 +53,7 @@ class CategoryTableViewController: UITableViewController {
     //MARK - TableView datasource methods
     // numberOfRowsInSection method that prints all the cells for every item on itemArray
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return categoryArray.count
+        return categories?.count ?? 1
     }
     
     // cellForRowAt method that is used to set the text for every cell element
@@ -62,12 +62,10 @@ class CategoryTableViewController: UITableViewController {
         // reference to the ToDoItemCell element
         let cell = tableView.dequeueReusableCell(withIdentifier: "CategoryCell", for: indexPath)
         // pulls every item on itemArray
-        let category = categoryArray[indexPath.row]
+        //let category = categoryArray[indexPath.row]
         // assigns the item.title text to the cell element's text
-        cell.textLabel?.text = category.name
-        // prints the checkmark if needed depending on the object .done element
-        //cell.accessoryType = item.done ? .checkmark : .none
-        
+        cell.textLabel?.text = categories?[indexPath.row].name ?? "No Categories yet"
+        //print("The name is \(categories[indexPath.row].name)")
         return cell
     }
     //MARK - TableView delegate methods
@@ -78,14 +76,18 @@ class CategoryTableViewController: UITableViewController {
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         let destinationVC = segue.destination as! ToDoListViewController
         
-        if let indexPath = tableView.indexPathForSelectedRow {            destinationVC.selectedCategorie = categoryArray[indexPath.row]
+        if let indexPath = tableView.indexPathForSelectedRow {
+            
+            destinationVC.selectedCategorie = categories?[indexPath.row]
         }
     }
     
     //MARK - Save Data Method
-    func saveCategory(){
+    func saveCategory(category: Category){
         do {
-            try context.save()
+            try realm.write {
+                realm.add(category)
+            }
         } catch {
             print("\(error) something happened loading categories")
         }
@@ -93,12 +95,8 @@ class CategoryTableViewController: UITableViewController {
     }
     
     //MARK - Load data method
-    func loadCategories(with request: NSFetchRequest<Category> = Category.fetchRequest()){
-        do {
-            categoryArray = try context.fetch(request)
-        } catch {
-            print("Error fetching data from context \(error)")
-        }
+    func loadCategories(){
+        categories = realm.objects(Category.self)
         tableView.reloadData()
     }
     
