@@ -8,9 +8,10 @@
 
 import UIKit
 import RealmSwift
+import SwipeCellKit
+import ChameleonFramework
 
-
-class CategoryTableViewController: UITableViewController {
+class CategoryTableViewController: SwipeTableViewController {
  
     let realm = try! Realm()
     var categories: Results<Category>?
@@ -19,6 +20,7 @@ class CategoryTableViewController: UITableViewController {
     override func viewDidLoad() {
        super.viewDidLoad()
        loadCategories()
+       //tableView.rowHeight = 80
     }
     //MARK - TableView add new categories
 
@@ -29,7 +31,7 @@ class CategoryTableViewController: UITableViewController {
             
             let newCategory = Category()
             newCategory.name = textField.text!
-           
+            newCategory.backgroundColor = (UIColor.randomFlat()?.hexValue())!
             self.saveCategory(category: newCategory)
             
         }
@@ -42,18 +44,30 @@ class CategoryTableViewController: UITableViewController {
     }
   
     //MARK - TableView datasource methods
+    
+//    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+//        let cell = tableView.dequeueReusableCell(withIdentifier: "Cell") as! SwipeTableViewCell
+//        cell.delegate = self
+//        return cell
+//    }
+    
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return categories?.count ?? 1
     }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
-        let cell = tableView.dequeueReusableCell(withIdentifier: "CategoryCell", for: indexPath)
-      
+        let cell = super.tableView(tableView, cellForRowAt: indexPath)
+        
+        cell.backgroundColor = UIColor(hexString: categories?[indexPath.row].backgroundColor)
+        cell.textLabel?.textColor = UIColor(contrastingBlackOrWhiteColorOn:cell.backgroundColor!, isFlat:true)
+
+
         cell.textLabel?.text = categories?[indexPath.row].name ?? "No Categories yet"
     
         return cell
     }
+    
     //MARK - TableView delegate methods
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         performSegue(withIdentifier: "goToItems", sender: self)
@@ -87,5 +101,17 @@ class CategoryTableViewController: UITableViewController {
     }
     
     
+    override func updateModels(at indexPath: IndexPath) {
+      if let categoryForDeletion = self.categories?[indexPath.row]
+      {
+        do {
+            try realm.write {
+                realm.delete(categoryForDeletion)
+            }
+        } catch {
+            print("\(error) something happened deleting a category")
+        }
+     }
+    }
 
 }
