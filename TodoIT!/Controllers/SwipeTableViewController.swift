@@ -8,6 +8,7 @@
 
 import UIKit
 import SwipeCellKit
+import ChameleonFramework
 
 class SwipeTableViewController: UITableViewController, SwipeTableViewCellDelegate {
 
@@ -15,7 +16,9 @@ class SwipeTableViewController: UITableViewController, SwipeTableViewCellDelegat
         super.viewDidLoad()
         tableView.rowHeight = 80
         tableView.separatorStyle = .none
-     
+
+        //tableView.tableFooterView = UIView()
+
     }
     
     //TableView Datasource methods

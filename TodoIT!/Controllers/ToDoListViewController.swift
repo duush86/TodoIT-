@@ -9,12 +9,15 @@
 import UIKit
 import RealmSwift
 import SwipeCellKit
+import ChameleonFramework
 
 class ToDoListViewController: SwipeTableViewController {
 
     let realm = try! Realm()
     
     var todoItems: Results<Item>?
+    
+    @IBOutlet weak var searchBar: UISearchBar!
     
     var selectedCategorie: Category? {
         didSet{
@@ -26,6 +29,43 @@ class ToDoListViewController: SwipeTableViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        tableView.tableFooterView = UIView()
+        tableView.backgroundColor = UIColor(hexString: selectedCategorie?.backgroundColor)
+
+       
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        title = selectedCategorie?.name
+        
+        guard let colourHex = selectedCategorie?.backgroundColor else { fatalError() }
+        
+        updateNavBar(withHexCode: colourHex)
+    }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+
+        //guard (navigationController?.navigationBar) != nil else {fatalError("Navigation controller does not exist.")}
+
+        updateNavBar(withHexCode: "2C3E50")
+    }
+    
+    func updateNavBar(withHexCode colourHexCode: String){
+        
+        guard let navBar = navigationController?.navigationBar else {fatalError("Navigation controller does not exist.")}
+        
+        guard let navBarColour = UIColor(hexString: colourHexCode) else { fatalError()}
+        
+        navBar.barTintColor = navBarColour
+        
+        navBar.tintColor = ContrastColorOf(backgroundColor: navBarColour, returnFlat: true)
+        
+        navBar.largeTitleTextAttributes = [NSAttributedString.Key.foregroundColor : ContrastColorOf(backgroundColor: navBarColour, returnFlat: true)]
+        navBar.titleTextAttributes = [NSAttributedString.Key.foregroundColor : ContrastColorOf(backgroundColor: navBarColour, returnFlat: true)]
+
+        
+        searchBar.barTintColor = navBarColour
+        
     }
     
     //MARK - Tableview Datasource Methods
@@ -42,10 +82,11 @@ class ToDoListViewController: SwipeTableViewController {
                 cell.textLabel?.text = item.title
                 cell.accessoryType = item.done ? .checkmark : .none
                 cell.backgroundColor = UIColor(hexString: item.backgroundColor)
-                cell.textLabel?.textColor = UIColor(contrastingBlackOrWhiteColorOn:cell.backgroundColor!, isFlat:true)
-
-
-                
+                if let colour = UIColor(hexString: selectedCategorie!.backgroundColor)?.darken(byPercentage:
+                    CGFloat(indexPath.row) / (3*CGFloat(todoItems!.count))){
+                    cell.backgroundColor = colour
+                    cell.textLabel?.textColor = ContrastColorOf(backgroundColor: colour, returnFlat: true)
+                }
             } else {
                 
                 cell.textLabel?.text = "No items under this category"

@@ -20,8 +20,13 @@ class CategoryTableViewController: SwipeTableViewController {
     override func viewDidLoad() {
        super.viewDidLoad()
        loadCategories()
+       tableView.backgroundColor = FlatNavyBlueDark()
+
+       // var colorArray = ColorSchemeOf(colorSchemeType: ColorScheme.analogous, color: FlatRed(), isFlatScheme: true)
+       // print(colorArray)
        //tableView.rowHeight = 80
     }
+    
     //MARK - TableView add new categories
 
     @IBAction func addButtonPressed(_ sender: UIBarButtonItem) {
@@ -43,6 +48,7 @@ class CategoryTableViewController: SwipeTableViewController {
         present(alert, animated: true, completion: nil)
     }
   
+    
     //MARK - TableView datasource methods
     
 //    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -50,6 +56,15 @@ class CategoryTableViewController: SwipeTableViewController {
 //        cell.delegate = self
 //        return cell
 //    }
+    override func viewWillAppear(_ animated: Bool) {
+        guard let navBar = navigationController?.navigationBar else {fatalError("Navigation controller does not exist.")}
+
+        navBar.largeTitleTextAttributes = [NSAttributedString.Key.foregroundColor : FlatWhite()]
+        navBar.titleTextAttributes = [NSAttributedString.Key.foregroundColor : FlatWhite()]
+        tableView.backgroundColor = FlatNavyBlueDark()
+
+    }
+    
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return categories?.count ?? 1
@@ -60,8 +75,8 @@ class CategoryTableViewController: SwipeTableViewController {
         let cell = super.tableView(tableView, cellForRowAt: indexPath)
         
         cell.backgroundColor = UIColor(hexString: categories?[indexPath.row].backgroundColor)
+        
         cell.textLabel?.textColor = UIColor(contrastingBlackOrWhiteColorOn:cell.backgroundColor!, isFlat:true)
-
 
         cell.textLabel?.text = categories?[indexPath.row].name ?? "No Categories yet"
     
