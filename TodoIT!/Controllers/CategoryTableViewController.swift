@@ -16,15 +16,14 @@ class CategoryTableViewController: SwipeTableViewController {
     let realm = try! Realm()
     var categories: Results<Category>?
 
+    @IBOutlet weak var addCategoryButton: UIBarButtonItem!
     
     override func viewDidLoad() {
        super.viewDidLoad()
        loadCategories()
        tableView.backgroundColor = FlatNavyBlueDark()
 
-       // var colorArray = ColorSchemeOf(colorSchemeType: ColorScheme.analogous, color: FlatRed(), isFlatScheme: true)
-       // print(colorArray)
-       //tableView.rowHeight = 80
+      
     }
     
     //MARK - TableView add new categories
@@ -48,19 +47,13 @@ class CategoryTableViewController: SwipeTableViewController {
         present(alert, animated: true, completion: nil)
     }
   
-    
-    //MARK - TableView datasource methods
-    
-//    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-//        let cell = tableView.dequeueReusableCell(withIdentifier: "Cell") as! SwipeTableViewCell
-//        cell.delegate = self
-//        return cell
-//    }
     override func viewWillAppear(_ animated: Bool) {
         guard let navBar = navigationController?.navigationBar else {fatalError("Navigation controller does not exist.")}
 
         navBar.largeTitleTextAttributes = [NSAttributedString.Key.foregroundColor : FlatWhite()]
         navBar.titleTextAttributes = [NSAttributedString.Key.foregroundColor : FlatWhite()]
+        //navBar.barTintColor = FlatWhite()
+        navBar.tintColor = FlatWhite()
         tableView.backgroundColor = FlatNavyBlueDark()
 
     }

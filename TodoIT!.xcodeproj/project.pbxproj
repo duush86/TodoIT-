@@ -101,9 +101,9 @@
 		94F8E43F23049C5600168867 /* Controllers */ = {
 			isa = PBXGroup;
 			children = (
+				94B3C610230CA62000D271D7 /* SwipeTableViewController.swift */,
 				941D50752308C772002E9113 /* CategoryTableViewController.swift */,
 				94ADB6A5230328A00019124F /* ToDoListViewController.swift */,
-				94B3C610230CA62000D271D7 /* SwipeTableViewController.swift */,
 			);
 			path = Controllers;
 			sourceTree = "<group>";

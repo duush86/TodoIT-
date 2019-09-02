@@ -16,15 +16,8 @@ class SwipeTableViewController: UITableViewController, SwipeTableViewCellDelegat
         super.viewDidLoad()
         tableView.rowHeight = 80
         tableView.separatorStyle = .none
-
-        //tableView.tableFooterView = UIView()
-
     }
-    
-    //TableView Datasource methods
-//    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-//        return categories?.count ?? 1
-//    }
+
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         

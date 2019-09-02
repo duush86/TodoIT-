@@ -41,6 +41,7 @@
                         </barButtonItem>
                     </navigationItem>
                     <connections>
+                        <outlet property="addCategoryButton" destination="HAU-bq-WD0" id="U3u-lM-fd8"/>
                         <segue destination="4Ri-Nv-wkE" kind="show" identifier="goToItems" id="4Cf-Gp-xtf"/>
                     </connections>
                 </tableViewController>
